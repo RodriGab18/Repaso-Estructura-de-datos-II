@@ -81,7 +81,7 @@ def huffman_comprimido(text):
 detenerse = False
 
 while not detenerse:
-    os.system("cls" if os.name == 'nt' else "clear")
+    os.system("cls")
     print("Ingrese la opción que requiera.")
     print("1. Ingresar texto.")
     print("2. Salir.")
@@ -94,7 +94,7 @@ while not detenerse:
         continue
 
     if opcion == 1:
-        os.system("cls" if os.name == 'nt' else "clear")
+        os.system("cls")
         print("Ingrese el texto a convertir.")
         textoAConvertir = input("Texto: ")
         
@@ -102,7 +102,7 @@ while not detenerse:
             print("El texto no puede estar vacío.")
         else:
             hashConvertido = hashFNV1(textoAConvertir)
-            print(f"Algoritmo Hash FNV-1: {hashConvertido}")
+            print(f"\nAlgoritmo Hash FNV-1: {hashConvertido}\n")
             tamañoOriginal, tamañoComprimido = huffman_comprimido(textoAConvertir)
             print(f"Tamaño original del texto: {tamañoOriginal} bits")
             print(f"Tamaño comprimido del texto con Huffman: {tamañoComprimido} bits")
