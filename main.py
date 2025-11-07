@@ -13,31 +13,41 @@ def hashFNV1(text):
     for byte in data:
         hash_value ^= byte  
         hash_value *= FNV_prime  
+        hash_value &= 0xFFFFFFFF  
 
     return hex(hash_value)
 
 # Huffman 
-class Node(namedtuple('Node', ['char', 'freq'])):
+class Node(namedtuple('Node', ['char', 'freq', 'left', 'right'])):
     def __lt__(self, other):
         return self.freq < other.freq
 
 def build_huffman_tree(text):
+    if not text:
+        return None
+        
     frequency = defaultdict(int)
     for char in text:
         frequency[char] += 1
 
-    priority_queue = [Node(char, freq) for char, freq in frequency.items()]
+    priority_queue = [Node(char, freq, None, None) for char, freq in frequency.items()]
     heapq.heapify(priority_queue)
 
     while len(priority_queue) > 1:
         left = heapq.heappop(priority_queue)
         right = heapq.heappop(priority_queue)
-        merged = Node(None, left.freq + right.freq)
+        merged = Node(None, left.freq + right.freq, left, right)
         heapq.heappush(priority_queue, merged)
 
-    return priority_queue[0]
+    return priority_queue[0] if priority_queue else None
 
-def build_codes(node, prefix='', codebook={}):
+def build_codes(node, prefix='', codebook=None):
+    if codebook is None:
+        codebook = {}
+    
+    if node is None:
+        return codebook
+        
     if node.char is not None:
         codebook[node.char] = prefix
     else:
@@ -46,7 +56,13 @@ def build_codes(node, prefix='', codebook={}):
     return codebook
 
 def compresion(text):
+    if not text:
+        return "", {}
+        
     root = build_huffman_tree(text)
+    if root is None:
+        return "", {}
+        
     codes = build_codes(root)
     compressed_text = ''.join(codes[char] for char in text)
     return compressed_text, codes
@@ -65,21 +81,35 @@ def huffman_comprimido(text):
 detenerse = False
 
 while not detenerse:
-    os.system("cls")
+    os.system("cls" if os.name == 'nt' else "clear")
     print("Ingrese la opción que requiera.")
     print("1. Ingresar texto.")
     print("2. Salir.")
-    opcion = int(input("Opción: "))
+    
+    try:
+        opcion = int(input("Opción: "))
+    except ValueError:
+        print("Por favor, ingrese un número válido.")
+        input("Presione cualquier tecla para continuar.")
+        continue
 
     if opcion == 1:
-        os.system("cls")
+        os.system("cls" if os.name == 'nt' else "clear")
         print("Ingrese el texto a convertir.")
         textoAConvertir = input("Texto: ")
-        hashConvertido = hashFNV1(textoAConvertir)
-        print(f"Algoritmo Hash FNV-1: {hashConvertido}")
-        tamañoOriginal, tamañoComprimido = huffman_comprimido(textoAConvertir)
-        print(f"Tamaño original del texto: {tamañoOriginal} bits")
-        print(f"Tamaño comprimido del texto con Huffman: {tamañoComprimido} bits")
+        
+        if not textoAConvertir:
+            print("El texto no puede estar vacío.")
+        else:
+            hashConvertido = hashFNV1(textoAConvertir)
+            print(f"Algoritmo Hash FNV-1: {hashConvertido}")
+            tamañoOriginal, tamañoComprimido = huffman_comprimido(textoAConvertir)
+            print(f"Tamaño original del texto: {tamañoOriginal} bits")
+            print(f"Tamaño comprimido del texto con Huffman: {tamañoComprimido} bits")
+            
+            if tamañoOriginal > 0:
+                ratio_compresion = (tamañoComprimido / tamañoOriginal) * 100
+                print(f"Ratio de compresión: {ratio_compresion:.2f}%")
 
         input("Presione cualquier tecla para continuar.")
 
@@ -88,4 +118,5 @@ while not detenerse:
         detenerse = True
 
     else: 
-        print("Ingrese una opción válida.")
+        print("Ingrese una opción válida (1 o 2).")
+        input("Presione cualquier tecla para continuar.")
